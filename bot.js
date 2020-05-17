@@ -24,7 +24,6 @@ client.on('message', message => {
     if (message.content.startsWith('toast')) {
        // message.reply('pong');
        db.insert([{
-            'mentions': message.mentions,
             'content': message.content
        }], function(err, result) {
             if (err) {
