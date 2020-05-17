@@ -23,10 +23,10 @@ mongodb.MongoClient.connect(process.env.MONGODB_URI, function (err, database) {
 client.on('message', message => {
     if (message.content.startsWith('toast')) {
        // message.reply('pong');
-       db.insert({
+       db.insert([{
             'mentions': message.mentions,
             'content': message.content
-       }, function(err, result) {
+       }], function(err, result) {
             if (err) {
                 console.log(err);
                 throw err;
@@ -50,4 +50,5 @@ process.on('SIGTERM', function() {
     db_client.close(function (err) {
         if (err) throw err;
     })
+    process.exit(0);
 });
