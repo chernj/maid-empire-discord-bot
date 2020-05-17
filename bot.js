@@ -31,8 +31,7 @@ client.on('message', message => {
                 throw err;
             }
             if (result) {
-                console.log(message.mentions.members);
-                console.log(message.mentions.users);
+                console.log(message.mentions.users.keyArray());
             }
         });
         db.count({}, function(e, entries_count) {
