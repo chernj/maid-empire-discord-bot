@@ -23,19 +23,17 @@ mongodb.MongoClient.connect(process.env.MONGODB_URI, function (err, database) {
 client.on('message', message => {
     if (message.content.startsWith('toast')) {
        // message.reply('pong');
-       db.insert([{
+        db.insert([{
             'content': message.content
-       }], function(err, result) {
+        }], function(err, result) {
             if (err) {
                 console.log(err);
                 throw err;
             }
-            if (result) {
-                console.log(db.count({}, function(e, r) {
-                    if (e) throw e;
-                }));
-            }
-       });
+        });
+        console.log(db.count({}, function(e, r) {
+            if (e) throw e;
+        }));
     }
 });
 
