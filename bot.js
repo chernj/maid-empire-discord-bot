@@ -30,6 +30,10 @@ client.on('message', message => {
                 console.log(err);
                 throw err;
             }
+            if (result) {
+                console.log(message.mentions.members);
+                console.log(message.mentions.users);
+            }
         });
         db.count({}, function(e, entries_count) {
             if (e) throw e;
