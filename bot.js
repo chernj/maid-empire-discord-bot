@@ -1,29 +1,53 @@
 const Discord = require('discord.js');
+const mongodb = require("mongodb");
 
 const client = new Discord.Client();
 
- 
-
 client.on('ready', () => {
-
     console.log('I am ready!');
-
 });
 
+var db_client;
+var db;
+
+mongodb.MongoClient.connect(process.env.MONGODB_URI, function (err, database) {
+    if (err) {
+        console.log(err);
+        process.exit(1);
+    }
  
+    db_client = database;
+    db = database.collection('toasts');
+});
 
 client.on('message', message => {
-
-    if (message.content === 'ping') {
-
-       message.reply('pong');
-
-       }
-
+    if (message.content.startsWith('toast')) {
+       // message.reply('pong');
+       db.insert({
+            'mentions': message.mentions,
+            'content': message.content
+       }, function(err, result) {
+            if (err) {
+                console.log(err);
+                throw err;
+            }
+            if (result) {
+                console.log(db.count({}, function(e, r) {
+                    if (e) throw e;
+                }));
+            }
+       });
+    }
 });
 
- 
+client.login(process.env.BOT_TOKEN);
 
-// THIS  MUST  BE  THIS  WAY
-
-client.login(process.env.BOT_TOKEN);//BOT_TOKEN is the Client Secret
+process.on('SIGTERM', function() {
+    db.drop(function (err) {
+        if (err) throw err;
+    })
+    client.destroy();
+    db_client.close(function (err) {
+        if (err) throw err;
+    })
+});
