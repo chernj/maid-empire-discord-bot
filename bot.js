@@ -31,9 +31,10 @@ client.on('message', message => {
                 throw err;
             }
         });
-        console.log(db.count({}, function(e, r) {
+        db.count({}, function(e, entries_count) {
             if (e) throw e;
-        }));
+            console.log(entries_count);
+        });
     }
 });
 
