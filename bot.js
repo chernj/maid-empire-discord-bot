@@ -48,13 +48,14 @@ function get_channel_names(channels, channel_ids) {
     var channel_list = [];
     var found = [];
     let missing = [];
-    channels.map(function(chan_obj, _) {
+    let chan_array = channels.values();
+    for (chan_obj in chan_array) {
         console.log("Here attempt", chan_obj);
         if (channel_ids.includes(chan_obj.id)) {
             channel_list.push(chan_obj.name);
             found.push(chan_obj.id);
         }
-    });
+    }
     for (c_id in channel_ids) {
         if (!(c_id in found)) {
             missing.push(c_id);
