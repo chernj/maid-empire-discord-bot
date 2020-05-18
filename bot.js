@@ -52,12 +52,12 @@ function get_channel_names(channels, channel_ids) {
             channel_list.push(name);
         }
     }
+    console.log("channel names are", channel_list);
     return channel_list;
 }
 
 function describe(channels, empty_str, valid_str) {
     var output = [];
-    console.log("channel names are", channels);
     if (channels.length == 0) {
         output.push(empty_str);
     } else {
@@ -133,7 +133,7 @@ function setup(message) {
                 "I can be queried for statistics in"
             )
             let status_message = [
-                listen_str, gloat_str, query_str, '\n',
+                listen_str, gloat_str, query_str, '',
                 channel_management_str()].join('\n');
             message.reply(status_message);
         });
