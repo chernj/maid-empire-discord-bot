@@ -49,7 +49,6 @@ function get_channel_names(channels, channel_ids) {
     var found = [];
     let missing = [];
     for (const chan_obj of channels.values()) {
-        // console.log("Here attempt", chan_obj.id);
         if (channel_ids.includes(String(chan_obj.id))) {
             channel_list.push('#' + chan_obj.name);
             found.push(chan_obj.id);
@@ -60,7 +59,6 @@ function get_channel_names(channels, channel_ids) {
             missing.push(c_id);
         }
     }
-    console.log("channel names are", channel_list);
     return [channel_list, missing];
 }
 
@@ -124,7 +122,6 @@ function setup(message) {
             var listen_toasts_channels = [];
             var gloat_toasts_channels = [];
             var query_channels = [];
-            console.log("setup results", result);
             result.map(function(entry, _) {
                 if (entry.option == 'l') {
                     listen_toasts_channels.push(entry.channel_id);
@@ -136,8 +133,6 @@ function setup(message) {
             })
             let chosen_guild = message.guild.id;
             let guild_chans = message.guild.channels;
-            // console.log("I hate this", guild_chans.values());
-            console.log("listening?", listen_toasts_channels);
             let [listens, rl] = get_channel_names(guild_chans, listen_toasts_channels);
             remove_channel_setting(chosen_guild, rl, 'l');
             let [gloats, rg] = get_channel_names(guild_chans, gloat_toasts_channels);
@@ -245,6 +240,11 @@ function edit_app_settings(message, chan_ids, option, add_cmd) {
             })
         })
         
+    } else {
+        // delete a setting
+        chan_ids.map(function(c_id, _) {
+            remove_channel_setting(chosen_guild, c_id, option);
+        })
     }
 }
 
