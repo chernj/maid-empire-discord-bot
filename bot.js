@@ -50,7 +50,7 @@ function get_channel_names(channels, channel_ids) {
     let chan_array = channels.array();
     let missing = [];
     for (chan_obj in chan_array) {
-        console.log("Here attempt", Object.keys(chan_obj[0][0]));
+        // console.log("Here attempt", Object.keys(chan_obj));
         if (channel_ids.includes(chan_obj.id)) {
             channel_list.push(chan_obj.name);
             found.push(chan_obj.id);
@@ -137,7 +137,7 @@ function setup(message) {
             })
             let chosen_guild = message.guild.id;
             let guild_chans = message.guild.channels;
-            // console.log("I hate this", guild_chans.array());
+            console.log("I hate this", guild_chans.array());
             console.log("listening?", listen_toasts_channels);
             let [listens, rl] = get_channel_names(guild_chans, listen_toasts_channels);
             remove_channel_setting(chosen_guild, rl, 'l');
