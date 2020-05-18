@@ -214,7 +214,7 @@ client.on('message', message => {
             setup(message);
         }
         let mng_channels = channel_managing_content(message, content);
-        if (mng_channels[0]) {
+        if (mng_channels & mng_channels[0]) {
             edit_app_settings(message.guild.id, ...mng_channels);
             setup(message);
         }
