@@ -47,7 +47,7 @@ function handle_toast(message) {
 function get_channel_names(channels, channel_ids) {
     channel_list = []
     for (channel_id in channel_ids) {
-        var name = channels.get(channel_id).name;
+        var name = channels.find('id', channel_id).name;
         channel_list.push(name);
     }
     return channel_list;
