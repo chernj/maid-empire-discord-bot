@@ -178,11 +178,12 @@ function channel_managing_content(message, content) {
     return null;
 }
 
-function edit_app_settings(chosen_guild, chan_ids, option, add_cmd) {
+function edit_app_settings(message, chan_ids, option, add_cmd) {
+    let chosen_guild = message.guild.id;
     if (add_cmd) {
         let inserted = 0;
         let found = 0;
-        for (c_id in chan_ids) {
+        chan_ids.map(function(c_id, index) {
             let search_data = {
                 guild: chosen_guild,
                 option: option,
@@ -193,17 +194,24 @@ function edit_app_settings(chosen_guild, chan_ids, option, add_cmd) {
                 if (err) throw err;
                 console.log("alright alright", result);
                 if (!result.length) {
-                    console.log("so here?");
                     app_settings.insertOne(search_data, {}, function(err, result) {
                         if (err) throw err;
                         inserted += result.insertedCount;
+                        if (index == chan_ids.length - 1) {
+                            console.log("inserted", inserted, "already found", found);
+                            setup(message);
+                        }
                     })
                 } else {
                     found += 1;
+                    if (index == chan_ids.length - 1) {
+                        console.log("inserted", inserted, "already found", found);
+                        setup(message);
+                    }
                 }
             })
-        }
-        console.log("inserted", inserted, "already found", found);
+        })
+        
     }
 }
 
@@ -218,8 +226,7 @@ client.on('message', message => {
         }
         let mng_channels = channel_managing_content(message, content);
         if (mng_channels != null) {
-            edit_app_settings(message.guild.id, ...mng_channels);
-            setup(message);
+            edit_app_settings(message, ...mng_channels);
         }
     }
 });
