@@ -80,7 +80,7 @@ function describe(channels, empty_str, valid_str) {
     return output.join('');
 }
 
-function remove_channel_setting(chosen_guild, chan_ids, option) {
+function remove_channel_setting(chosen_guild, chan_ids, option, callback=null) {
     chan_ids.map(function(c_id, _) {
         let data = {
             guild: chosen_guild,
@@ -89,6 +89,9 @@ function remove_channel_setting(chosen_guild, chan_ids, option) {
         }
         app_settings.deleteOne(data, function(err, result) {
             if (err) throw err;
+            if (callback != null) {
+                callback();
+            }
         })
     });
 }
@@ -242,9 +245,10 @@ function edit_app_settings(message, chan_ids, option, add_cmd) {
         
     } else {
         // delete a setting
-        chan_ids.map(function(c_id, _) {
-            remove_channel_setting(chosen_guild, c_id, option);
-        })
+        remove_channel_setting(chosen_guild, chan_ids, option, function() {
+            console.log("deleted", chan_ids.length);
+            setup(message);
+        });
     }
 }
 
