@@ -191,8 +191,7 @@ function edit_app_settings(chosen_guild, chan_ids, option, add_cmd) {
             // make sure none already exist
             app_settings.find(search_data).toArray(function(err, result) {
                 if (err) throw err;
-                if (!result) {
-                    console.log("Moving on to insertion");
+                if (!result.length) {
                     app_settings.insertOne(search_data, {}, function(err, result) {
                         if (err) throw err;
                         inserted += result.insertedCount;
