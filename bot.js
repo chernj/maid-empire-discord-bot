@@ -4,7 +4,7 @@ const mongodb = require("mongodb");
 const client = new Discord.Client();
 
 client.on('ready', () => {
-    console.log('Apologies for the delay master');
+    console.log('Apologies for the delay, master');
 });
 
 var db_client;
@@ -142,7 +142,7 @@ function channel_managing_content(message, content) {
         message.reply(
             invalid_perm_message('Please allow someone who can to manage my settings')
         );
-        return (null, null);
+        return null;
     }
     let managing = false;
     let add = true;
@@ -175,7 +175,7 @@ function channel_managing_content(message, content) {
             return (channels, option, add);
         }
     }
-    return (null, null);
+    return null;
 }
 
 function edit_app_settings(chosen_guild, chan_ids, option, add_cmd) {
@@ -214,7 +214,7 @@ client.on('message', message => {
             setup(message);
         }
         let mng_channels = channel_managing_content(message, content);
-        if (mng_channels & mng_channels[0]) {
+        if (mng_channels != null) {
             edit_app_settings(message.guild.id, ...mng_channels);
             setup(message);
         }
