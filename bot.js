@@ -50,7 +50,7 @@ function get_channel_names(channels, channel_ids) {
     let chan_array = channels.array();
     let missing = [];
     for (chan_obj in chan_array) {
-        console.log("Here attempt", Object.keys(chan_obj['0']));
+        console.log("Here attempt", Object.keys(chan_obj[0]));
         if (channel_ids.includes(chan_obj.id)) {
             channel_list.push(chan_obj.name);
             found.push(chan_obj.id);
