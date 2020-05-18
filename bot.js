@@ -74,6 +74,7 @@ function describe(channels, empty_str, valid_str) {
 function setup(message) {
     let user_roles = message.member.roles.cache;
     let can_setup = false;
+    console.log("all roles", user_roles);
     let MANAGE_CHANNELS = 0x10;
     for (role in user_roles) {
         console.log("perms?", role.permissions);
