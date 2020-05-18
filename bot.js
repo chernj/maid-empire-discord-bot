@@ -78,7 +78,6 @@ function describe(channels, empty_str, valid_str) {
 }
 
 function remove_channel_setting(chosen_guild, chan_ids, option) {
-    console.log('cids', chan_ids);
     chan_ids.map(function(c_id, _) {
         let data = {
             guild: chosen_guild,
@@ -132,6 +131,7 @@ function setup(message) {
             })
             let chosen_guild = message.guild.id;
             let guild_chans = message.guild.channels;
+            console.log("I hate this", guild_chans.keyArray());
             let [listens, rl] = get_channel_names(guild_chans, listen_toasts_channels);
             remove_channel_setting(chosen_guild, rl, 'l');
             let [gloats, rg] = get_channel_names(guild_chans, gloat_toasts_channels);
