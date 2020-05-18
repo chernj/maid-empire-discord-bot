@@ -72,7 +72,7 @@ function describe(channels, empty_str, valid_str) {
         output.push(valid_str + ' ');
         if (channels.length > 2) {
             output.push(
-                listens.slice(0, -2).join(', ')
+                channels.slice(0, -2).join(', ')
             )
         }
         output.push(
