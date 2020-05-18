@@ -130,7 +130,7 @@ function setup(message) {
                 }
             })
             let chosen_guild = message.guild.id;
-            let guild_chans = message.guild.channels.keyArray();
+            let guild_chans = message.guild.channels;
             let [listens, rl] = get_channel_names(guild_chans, listen_toasts_channels);
             remove_channel_setting(chosen_guild, rl, 'l');
             let [gloats, rg] = get_channel_names(guild_chans, gloat_toasts_channels);
