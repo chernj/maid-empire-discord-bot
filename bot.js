@@ -100,6 +100,7 @@ function setup(message) {
             var listen_toasts_channels = [];
             var gloat_toasts_channels = [];
             var query_channels = [];
+            console.log("setup results", result);
             for (entry in result) {
                 if (entry.option === 'l') {
                     listen_toasts_channels.push(entry.channel_id);
@@ -192,7 +193,6 @@ function edit_app_settings(message, chan_ids, option, add_cmd) {
             // make sure none already exist
             app_settings.find(search_data).toArray(function(err, result) {
                 if (err) throw err;
-                console.log("alright alright", result);
                 if (!result.length) {
                     app_settings.insertOne(search_data, {}, function(err, result) {
                         if (err) throw err;
