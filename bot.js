@@ -51,7 +51,7 @@ function get_channel_names(channels, channel_ids) {
     for (const chan_obj of channels.values()) {
         // console.log("Here attempt", chan_obj.id);
         if (channel_ids.includes(String(chan_obj.id))) {
-            channel_list.push(chan_obj.name);
+            channel_list.push('#' + chan_obj.name);
             found.push(chan_obj.id);
         }
     }
@@ -79,7 +79,7 @@ function describe(channels, empty_str, valid_str) {
             channels.slice(-2).join(', and ')
         )
     }
-    return output.join('');
+    return output.join(', ');
 }
 
 function remove_channel_setting(chosen_guild, chan_ids, option) {
