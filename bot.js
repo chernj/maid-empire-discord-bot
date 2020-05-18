@@ -172,7 +172,7 @@ function channel_managing_content(message, content) {
     if (managing) {
         if (message.mentions.channels) {
             let channels = message.mentions.channels.keyArray();
-            return (channels, option, add);
+            return [channels, option, add];
         }
     }
     return null;
