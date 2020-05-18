@@ -46,7 +46,7 @@ function handle_toast(message) {
 
 function get_channel_names(channel_ids) {
     channel_list = []
-    for (channel_id in listen_toasts_channels) {
+    for (channel_id in channel_ids) {
         var name = message.guild.channels.get(channel_id).name;
         channel_list.push(name);
     }
