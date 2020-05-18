@@ -81,7 +81,7 @@ function describe(channels, empty_str, valid_str) {
 }
 
 function remove_channel_setting(chosen_guild, chan_ids, option, callback=null) {
-    chan_ids.map(function(c_id, _) {
+    chan_ids.map(function(c_id, index) {
         let data = {
             guild: chosen_guild,
             option: option,
@@ -89,7 +89,7 @@ function remove_channel_setting(chosen_guild, chan_ids, option, callback=null) {
         }
         app_settings.deleteOne(data, function(err, result) {
             if (err) throw err;
-            if (callback != null) {
+            if (callback != null & index == chan_ids.length-1) {
                 callback();
             }
         })
