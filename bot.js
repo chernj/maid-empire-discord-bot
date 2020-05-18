@@ -76,6 +76,7 @@ function setup(message) {
     let can_setup = false;
     let MANAGE_CHANNELS = 0x10;
     for (role in user_roles) {
+        console.log("perms?", role.permissions);
         if (MANAGE_CHANNELS & role.permissions) {
             can_setup = True;
             break;
