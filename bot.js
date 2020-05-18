@@ -45,18 +45,23 @@ function handle_toast(message) {
 }
 
 function get_channel_names(channels, channel_ids) {
-    var channel_list = []
-    var removals = [];
-    for (channel_id in channel_ids) {
-        var channel = channels.get(channel_id);
-        if (channel != null) {
-            channel_list.push(name);
-        } else {
-            removals.push(channel_id);
+    var channel_list = [];
+    var found = [];
+    let chan_array = channels.array();
+    let missing = [];
+    for (chan_obj in chan_array) {
+        if (channel_ids.includes(chan_obj.id)) {
+            channel_list.push(chan_obj.name);
+            found.push(chan_obj.id);
+        }
+    }
+    for (c_id in channel_ids) {
+        if (!(c_id in found)) {
+            missing.push(c_id);
         }
     }
     console.log("channel names are", channel_list);
-    return [channel_list, removals];
+    return [channel_list, missing];
 }
 
 function describe(channels, empty_str, valid_str) {
