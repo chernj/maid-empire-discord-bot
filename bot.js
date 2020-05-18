@@ -101,15 +101,15 @@ function setup(message) {
             var gloat_toasts_channels = [];
             var query_channels = [];
             console.log("setup results", result);
-            for (entry in result) {
-                if (entry.option === 'l') {
+            result.map(function(entry, _) {
+                if (entry.option == 'l') {
                     listen_toasts_channels.push(entry.channel_id);
-                } else if (entry.option === 'g') {
+                } else if (entry.option == 'g') {
                     gloat_toasts_channels.push(entry.channel_id);
-                } else if (entry.option === 'q') {
+                } else if (entry.option == 'q') {
                     query_channels.push(entry.channel_id);
                 }
-            }
+            })
             let listens = get_channel_names(listen_toasts_channels);
             let gloats = get_channel_names(gloat_toasts_channels);
             let queries = get_channel_names(query_channels);
@@ -235,6 +235,9 @@ client.login(process.env.BOT_TOKEN);
 
 process.on('SIGTERM', function() {
     toasts.drop(function (err) {
+        if (err) throw err;
+    })
+    app_settings.drop(function (err) {
         if (err) throw err;
     })
     client.destroy();
