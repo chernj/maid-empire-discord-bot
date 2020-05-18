@@ -103,7 +103,7 @@ function setup(message) {
             var listen_toasts_channels = [];
             var gloat_toasts_channels = [];
             var query_channels = [];
-            console.log("setup results", result);
+            // console.log("setup results", result);
             result.map(function(entry, _) {
                 if (entry.option == 'l') {
                     listen_toasts_channels.push(entry.channel_id);
@@ -114,6 +114,7 @@ function setup(message) {
                 }
             })
             let guild_chans = message.guild.channels;
+            console.log("What is this????", guild_chans);
             let listens = get_channel_names(guild_chans, listen_toasts_channels);
             let gloats = get_channel_names(guild_chans, gloat_toasts_channels);
             let queries = get_channel_names(guild_chans, query_channels);
