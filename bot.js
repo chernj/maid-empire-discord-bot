@@ -56,7 +56,7 @@ function get_channel_names(channels, channel_ids) {
         }
     }
     console.log("channel names are", channel_list);
-    return (channel_list, removals);
+    return [channel_list, removals];
 }
 
 function describe(channels, empty_str, valid_str) {
