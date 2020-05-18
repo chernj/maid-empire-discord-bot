@@ -47,7 +47,7 @@ function handle_toast(message) {
 function get_channel_names(channels, channel_ids) {
     var channel_list = []
     for (channel_id in channel_ids) {
-        var channel = channels.get(channel_id);
+        var channel = channels.resolve(channel_id);
         if (channel != null) {
             channel_list.push(name);
         }
@@ -113,8 +113,7 @@ function setup(message) {
                     query_channels.push(entry.channel_id);
                 }
             })
-            let guild_chans = message.guild.channels;
-            console.log("What is this????", guild_chans);
+            let guild_chans = message.guild.channels.keyArray();;
             let listens = get_channel_names(guild_chans, listen_toasts_channels);
             let gloats = get_channel_names(guild_chans, gloat_toasts_channels);
             let queries = get_channel_names(guild_chans, query_channels);
