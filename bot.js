@@ -71,9 +71,28 @@ function describe(channels, empty_str, valid_str) {
     return output.join('');
 }
 
-function setup(message) {
+function channel_management_str() {
+    let help_str = [
+        '- add toast-listening channels using "listen for toasts in", followed by channel mentions',
+        '- add toast-bragging channels using "talk about toasts in", followed by channel mentions',
+        '- add user queryable channels using "enable querying in", followed by channel mentions',
+        '\nRemove channels by adding "don\'t" to the first 2 commands, or say "disable" instead of "enable".'
+    ];
+    return help_str.join('\n');
+}
+
+function invalid_perm_message(followup) {
+    let base = 'Sorry, but you do not have the ability to manage channels.\n';
+    return base + followup;
+}
+
+function can_touch_bot(message) {
     let perms = message.member.permissions;
-    let can_setup = perms.has('MANAGE_CHANNELS');
+    return perms.has('MANAGE_CHANNELS');
+}
+
+function setup(message) {
+    let can_setup = can_touch_bot(message);
     if (can_setup) {
         app_settings.find({guild: message.guild.id}).toArray(function(err, result) {
             if (err) throw err;
@@ -95,8 +114,8 @@ function setup(message) {
             let queries = get_channel_names(query_channels);
             let listen_str = describe(
                 listens,
-                "I'm not listening for toasts in any channel.",
-                "I'm listening for toasts in"
+                "\nI'm not listening for toasts in any channel.",
+                "\nI'm listening for toasts in"
             )
             let gloat_str = describe(
                 gloats,
@@ -108,27 +127,97 @@ function setup(message) {
                 "Users can't query me in any channel.",
                 "I can be queried for statistics in"
             )
-            let status_message = [listen_str, gloat_str, query_str].join('\n');
+            let status_message = [listen_str, gloat_str, query_str, channel_management_str()].join('\n');
             message.reply(status_message);
         });
     } else {
         message.reply(
-            'Sorry, but you do not have the ability to manage channels! ' +
-            'Please ask someone who can to set me up :3'
+            invalid_perm_message('Please ask someone who can to set me up')
         )
     }
 }
 
+function channel_managing_content(message, content) {
+    if (!can_touch_bot(message)) {
+        message.reply(
+            invalid_perm_message('Please allow someone who can to manage my settings')
+        );
+        return (null, null);
+    }
+    let managing = false;
+    let add = true;
+    let option = '';
+    if (content.startsWith('listen for toasts in')) {
+        managing = true;
+        option = 'l';
+    } else if (content.startsWith('don\'t listen for toasts in')) {
+        add = false;
+        managing = true;
+        option = 'l';
+    } else if (content.startsWith('talk about toasts in')) {
+        managing = true;
+        option = 'g';
+    } else if (content.startsWith('don\'t talk about toasts in')) {
+        add = false;
+        managing = true;
+        option = 'g';
+    } else if (content.startsWith('enable querying in')) {
+        managing = true;
+        option = 'q';
+    } else if (content.startsWith('disable querying in')) {
+        add = false;
+        managing = true;
+        option = 'q';
+    }
+    if (managing) {
+        if (message.mentions.channels) {
+            let channels = message.mentions.channels.keyArray();
+            return (channels, option, add);
+        }
+    }
+    return (null, null);
+}
+
+function edit_app_settings(chosen_guild, chan_ids, option, add_cmd) {
+    if (add_cmd) {
+        let inserted = 0;
+        let found = 0;
+        for (c_id in chan_ids) {
+            let search_data = {
+                guild: chosen_guild,
+                option: option,
+                channel_id: c_id
+            };
+            // make sure none already exist
+            app_settings.find(search_data).toArray(function(err, result) {
+                if (err) throw err;
+                if (!result) {
+                    app_settings.insertOne(search_data, function(err, result) {
+                        if (err) throw err;
+                        inserted += result.insertedCount;
+                    })
+                } else {
+                    found += 1;
+                }
+            })
+        }
+    }
+}
+
 client.on('message', message => {
-    if (message.content.startsWith('toast')) {
+    let content = message.content.toLowerCase();
+    if (content.startsWith('toast')) {
         // message.reply('pong');
         handle_toast(message);
-    } else if (message.content.startsWith('setup')) {
-        if (message.mentions.members.has(client.user.id)) {
+    } else if (message.mentions.members.has(client.user.id)) {
+        if (content.startsWith('setup')) {
             setup(message);
         }
-        console.log("so trying to setup");
-        console.log(message.mentions.members.keyArray(), client.user.id);
+        let mng_channels = channel_managing_content(message, content);
+        if (mng_channels[0]) {
+            edit_app_settings(message.guild.id, ...mng_channels);
+            setup(message);
+        }
     }
 });
 
