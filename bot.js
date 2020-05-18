@@ -44,10 +44,10 @@ function handle_toast(message) {
     });
 }
 
-function get_channel_names(channel_ids) {
+function get_channel_names(channels, channel_ids) {
     channel_list = []
     for (channel_id in channel_ids) {
-        var name = message.guild.channels.get(channel_id).name;
+        var name = channels.get(channel_id).name;
         channel_list.push(name);
     }
     return channel_list;
@@ -110,9 +110,10 @@ function setup(message) {
                     query_channels.push(entry.channel_id);
                 }
             })
-            let listens = get_channel_names(listen_toasts_channels);
-            let gloats = get_channel_names(gloat_toasts_channels);
-            let queries = get_channel_names(query_channels);
+            let guild_chans = message.guild.channels;
+            let listens = get_channel_names(guild_chans, listen_toasts_channels);
+            let gloats = get_channel_names(guild_chans, gloat_toasts_channels);
+            let queries = get_channel_names(guild_chans, query_channels);
             let listen_str = describe(
                 listens,
                 "\nI'm not listening for toasts in any channel.",
