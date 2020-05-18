@@ -72,17 +72,8 @@ function describe(channels, empty_str, valid_str) {
 }
 
 function setup(message) {
-    let user_roles = message.member.roles.cache;
-    let can_setup = false;
-    console.log("all roles", user_roles);
-    let MANAGE_CHANNELS = 0x10;
-    for (role in user_roles) {
-        console.log("perms?", role.permissions);
-        if (MANAGE_CHANNELS & role.permissions) {
-            can_setup = True;
-            break;
-        }
-    }
+    let perms = message.member.permissions;
+    let can_setup = perms.has('MANAGE_CHANNELS');
     if (can_setup) {
         app_settings.find({guild: message.guild.id}).toArray(function(err, result) {
             if (err) throw err;
