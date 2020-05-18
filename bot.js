@@ -4,7 +4,7 @@ const mongodb = require("mongodb");
 const client = new Discord.Client();
 
 client.on('ready', () => {
-    console.log('I am ready!');
+    console.log('Apologies for the delay master');
 });
 
 var db_client;
