@@ -201,6 +201,7 @@ function edit_app_settings(chosen_guild, chan_ids, option, add_cmd) {
                 }
             })
         }
+        console.log("inserted", inserted, "already found", found);
     }
 }
 
