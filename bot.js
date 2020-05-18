@@ -78,6 +78,7 @@ function describe(channels, empty_str, valid_str) {
 }
 
 function remove_channel_setting(chosen_guild, chan_ids, option) {
+    console.log('cids', chan_ids);
     chan_ids.map(function(c_id, _) {
         let data = {
             guild: chosen_guild,
