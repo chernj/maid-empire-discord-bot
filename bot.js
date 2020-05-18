@@ -57,7 +57,8 @@ function get_channel_names(channels, channel_ids) {
 
 function describe(channels, empty_str, valid_str) {
     var output = [];
-    if (!channels.length) {
+    console.log("channel names are", channels);
+    if (channels.length == 0) {
         output.push(empty_str);
     } else {
         output.push(valid_str + ' ');
