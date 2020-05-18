@@ -46,14 +46,17 @@ function handle_toast(message) {
 
 function get_channel_names(channels, channel_ids) {
     var channel_list = []
+    var removals = [];
     for (channel_id in channel_ids) {
-        var channel = channels.resolve(channel_id);
+        var channel = channels.get(channel_id);
         if (channel != null) {
             channel_list.push(name);
+        } else {
+            removals.push(channel_id);
         }
     }
     console.log("channel names are", channel_list);
-    return channel_list;
+    return (channel_list, removals);
 }
 
 function describe(channels, empty_str, valid_str) {
@@ -72,6 +75,19 @@ function describe(channels, empty_str, valid_str) {
         )
     }
     return output.join('');
+}
+
+function remove_channel_setting(chosen_guild, chan_ids, option) {
+    chan_ids.map(function(c_id, _) {
+        let data = {
+            guild: chosen_guild,
+            option: option,
+            channel_id: c_id
+        }
+        app_settings.deleteOne(data, function(err, result) {
+            if (err) throw err;
+        })
+    });
 }
 
 function channel_management_str() {
@@ -103,7 +119,7 @@ function setup(message) {
             var listen_toasts_channels = [];
             var gloat_toasts_channels = [];
             var query_channels = [];
-            // console.log("setup results", result);
+            console.log("setup results", result);
             result.map(function(entry, _) {
                 if (entry.option == 'l') {
                     listen_toasts_channels.push(entry.channel_id);
@@ -113,10 +129,14 @@ function setup(message) {
                     query_channels.push(entry.channel_id);
                 }
             })
-            let guild_chans = message.guild.channels.keyArray();;
-            let listens = get_channel_names(guild_chans, listen_toasts_channels);
-            let gloats = get_channel_names(guild_chans, gloat_toasts_channels);
-            let queries = get_channel_names(guild_chans, query_channels);
+            let chosen_guild = message.guild.id;
+            let guild_chans = message.guild.channels.keyArray();
+            let [listens, rl] = get_channel_names(guild_chans, listen_toasts_channels);
+            remove_channel_setting(chosen_guild, rl, 'l');
+            let [gloats, rg] = get_channel_names(guild_chans, gloat_toasts_channels);
+            remove_channel_setting(chosen_guild, rg, 'g');
+            let [queries, rq] = get_channel_names(guild_chans, query_channels);
+            remove_channel_setting(chosen_guild, rq, 'q');
             let listen_str = describe(
                 listens,
                 "\nI'm not listening for toasts in any channel.",
