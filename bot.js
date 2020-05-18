@@ -136,7 +136,7 @@ function setup(message) {
             })
             let chosen_guild = message.guild.id;
             let guild_chans = message.guild.channels;
-            console.log("I hate this", guild_chans.keyArray());
+            console.log("I hate this", guild_chans.array());
             console.log("listening?", listen_toasts_channels);
             let [listens, rl] = get_channel_names(guild_chans, listen_toasts_channels);
             remove_channel_setting(chosen_guild, rl, 'l');
