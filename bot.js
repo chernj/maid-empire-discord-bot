@@ -45,7 +45,7 @@ function handle_toast(message) {
 }
 
 function get_channel_names(channels, channel_ids) {
-    channel_list = []
+    var channel_list = []
     for (channel_id in channel_ids) {
         var channel = channels.get(channel_id);
         if (channel != null) {
@@ -132,7 +132,9 @@ function setup(message) {
                 "Users can't query me in any channel.",
                 "I can be queried for statistics in"
             )
-            let status_message = [listen_str, gloat_str, query_str, channel_management_str()].join('\n');
+            let status_message = [
+                listen_str, gloat_str, query_str, '\n',
+                channel_management_str()].join('\n');
             message.reply(status_message);
         });
     } else {
