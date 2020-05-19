@@ -66,7 +66,7 @@ function populate_settings() {
                 locations[entry.guild]['querying'].push(entry.channel_id);
             }
         });
-        console.log(locations);
+        // sconsole.log(locations);
     });
 }
 
@@ -124,12 +124,34 @@ function remove_channel_setting(chosen_guild, chan_ids, option, callback=null) {
 
 function channel_management_str() {
     let help_str = [
-        '- add toast-listening channels using "listen for toasts in", followed by channel mentions',
-        '- add toast-bragging channels using "talk about toasts in", followed by channel mentions',
-        '- add user queryable channels using "enable querying in", followed by channel mentions',
-        '\nRemove channels by adding "don\'t" to the first 2 commands, or say "disable" instead of "enable".'
+        '\nI only speak when spoken to. Mention me to use any command, including the ones below.\n',
+        '`listen for toasts in` along with channel mentions allows me to listen for toasts in these channels.',
+        '`talk about toasts in` again with channel mentions allows me to relay accomplishments in these channels.',
+        '`enable querying in` plus channel mentions allows me respond to commands in designed channels.',
+        '\n`don\'t` as a prefix before the first two commands deafen and mute me to any mentioned channels.',
+        'Finally, using `disable` instead of `enable` reverses the querying command.'
     ];
     return help_str.join('\n');
+}
+
+function server_help_str(managing_perm) {
+    let help_str = [
+        '\nYou can configure how you interact with toasts, as well as set timed or ',
+        'dynamic reminders to receive additional encouragement to achieve your goals.\n',
+        'While mentioning me, say:\n',
+        '`reminders?` to see what reminders are set for you\n',
+        '`toasts?` along with an optional time specification to see toasts given to you going back ',
+        'until the specified time.\n\tTime format is `NUMBER UNIT`, with valid units being week, day, ',
+        'and hour.\n\tIf you\'d prefer to have these results messaged to you, preppend the command ',
+        'with `DM`.\n',
+        '`help` to see this menu again.'
+    ];
+    if (managing_perm) {
+        help_str.push('\n\nAlso, configure me to your liking so I can better help others. While mentioning me, say:');
+        help_str.push('\n`settings`, to understand how I\'m configured to help this server.');
+        help_str.push('\n`commands`, to understand how to edit any server settings.')
+    }
+    return help_str.join('');
 }
 
 function invalid_perm_message(followup) {
@@ -184,8 +206,7 @@ function setup(message) {
                 "I can be queried for statistics in"
             )
             let status_message = [
-                listen_str, gloat_str, query_str, '',
-                channel_management_str()].join('\n');
+                listen_str, gloat_str, query_str].join('\n');
             message.reply(status_message);
         });
     } else {
@@ -281,18 +302,25 @@ function edit_app_settings(message, chan_ids, option, add_cmd) {
     }
 }
 
+function looking_for(content, phrase) {
+    if (content.startsWith(phrase) | content.endsWith(phrase)) return true;
+    return false;
+}
+
 client.on('message', message => {
     let content = message.content.toLowerCase();
-    if (content.startsWith('toast')) {
-        // message.reply('pong');
+    if (looking_for(content, 'toast')) {
         handle_toast(message);
     } else if (message.mentions.members.has(client.user.id)) {
-        if (content.startsWith('setup')) {
+        if (looking_for(content, 'app settings')) {
             setup(message);
         }
         let mng_channels = channel_managing_content(message, content);
         if (mng_channels != null) {
             edit_app_settings(message, ...mng_channels);
+        }
+        if (looking_for(content, 'help')) {
+            message.reply(server_help_str(can_touch_bot(message)));
         }
     }
 });
