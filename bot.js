@@ -12,6 +12,7 @@ var toasts;
 var reminders;
 var user_settings;
 var app_settings;
+var locations = {};
 
 mongodb.MongoClient.connect(process.env.MONGODB_URI, function (err, database) {
     if (err) {
@@ -24,6 +25,7 @@ mongodb.MongoClient.connect(process.env.MONGODB_URI, function (err, database) {
     reminders = database.collection('reminders');
     user_settings = database.collection('user_settings');
     app_settings = database.collection('app_settings');
+    populate_settings();
 });
 
 function handle_toast(message) {
@@ -42,6 +44,30 @@ function handle_toast(message) {
         if (e) throw e;
         console.log(entries_count);
     });
+}
+
+function populate_settings() {
+    locations = {};
+    app_settings.find({}).toArray(function(err, result) {
+        if (err) throw err;
+        result.map(function(entry, _) {
+            if (!(entry.guild in locations)) {
+                locations[entry.guild] = {
+                    'listening': [],
+                    'gloating': [],
+                    'querying': []
+                }
+            }
+            if (entry.option == 'l') {
+                locations[entry.guild]['listening'].push(entry.channel_id);
+            } else if (entry.option == 'g') {
+                locations[entry.guild]['gloating'].push(entry.channel_id);
+            } else if (entry.option == 'q') {
+                locations[entry.guild]['querying'].push(entry.channel_id);
+            }
+        });
+    });
+    console.log(locations);
 }
 
 function get_channel_names(channels, channel_ids) {
@@ -230,6 +256,7 @@ function edit_app_settings(message, chan_ids, option, add_cmd) {
                         inserted += result.insertedCount;
                         if (index == chan_ids.length - 1) {
                             console.log("inserted", inserted, "already found", found);
+                            populate_settings();
                             setup(message);
                         }
                     })
@@ -237,6 +264,7 @@ function edit_app_settings(message, chan_ids, option, add_cmd) {
                     found += 1;
                     if (index == chan_ids.length - 1) {
                         console.log("inserted", inserted, "already found", found);
+                        populate_settings();
                         setup(message);
                     }
                 }
@@ -247,6 +275,7 @@ function edit_app_settings(message, chan_ids, option, add_cmd) {
         // delete a setting
         remove_channel_setting(chosen_guild, chan_ids, option, function() {
             console.log("deleted", chan_ids.length);
+            populate_settings();
             setup(message);
         });
     }
