@@ -66,8 +66,8 @@ function populate_settings() {
                 locations[entry.guild]['querying'].push(entry.channel_id);
             }
         });
+        console.log(locations);
     });
-    console.log(locations);
 }
 
 function get_channel_names(channels, channel_ids) {
