@@ -141,15 +141,15 @@ function server_help_str(managing_perm) {
         'While mentioning me, say:\n',
         '`reminders?` to see what reminders are set for you\n',
         '`toasts?` along with an optional time specification to see toasts given to you going back ',
-        'until the specified time.\n\tTime format is `NUMBER UNIT`, with valid units being week, day, ',
-        'and hour.\n\tIf you\'d prefer to have these results messaged to you, preppend the command ',
+        'until the specified time.\n\t\tTime format is `NUMBER UNIT`, with valid units being week, day, ',
+        'and hour.\n\t\tIf you\'d prefer to have these results messaged to you, preppend the command ',
         'with `DM`.\n',
         '`help` to see this menu again.'
     ];
     if (managing_perm) {
-        help_str.push('\n\nAlso, configure me to your liking so I can better help others. While mentioning me, say:');
-        help_str.push('\n`settings`, to understand how I\'m configured to help this server.');
-        help_str.push('\n`commands`, to understand how to edit any server settings.')
+        help_str.push('\n\nAlso, configure me to your liking so I can better help others. While mentioning me say:');
+        help_str.push('\n`app settings` to understand how I\'m configured to help this server.');
+        help_str.push('\n`commands` to understand how to edit any server settings.')
     }
     return help_str.join('');
 }
@@ -321,6 +321,12 @@ client.on('message', message => {
         }
         if (looking_for(content, 'help')) {
             message.reply(server_help_str(can_touch_bot(message)));
+        } else if (looking_for(content, 'commands')) {
+            if (can_touch_bot(message)) {
+                message.reply(channel_management_str());
+            } else {
+                message.reply(invalid_perm_message('Please do not worry about these commands.'));
+            }
         }
     }
 });
