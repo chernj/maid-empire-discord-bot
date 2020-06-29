@@ -78,18 +78,18 @@ function populate_settings() {
         if (err) throw err;
         result.map(function(entry, _) {
             if (!(entry.guild in locations)) {
-                locations[entry.guild.id] = {
+                locations[entry.guild] = {
                     'listening': [],
                     'gloating': [],
                     'querying': []
                 }
             }
             if (entry.option == 'l') {
-                locations[entry.guild.id]['listening'].push(entry.channel_id);
+                locations[entry.guild]['listening'].push(entry.channel_id);
             } else if (entry.option == 'g') {
-                locations[entry.guild.id]['gloating'].push(entry.channel_id);
+                locations[entry.guild]['gloating'].push(entry.channel_id);
             } else if (entry.option == 'q') {
-                locations[entry.guild.id]['querying'].push(entry.channel_id);
+                locations[entry.guild]['querying'].push(entry.channel_id);
             } else if (entry.option == 'm') {
                 // fill in last_checked_message
                 var msg_key = toString(entry.guild) + '.' + toString(entry.channel_id);
@@ -329,7 +329,7 @@ client.on('message', message => {
 function check_messages() {
     for (const guild_id in guild_channels) {
         let chans = guild_channels[guild_id];
-        let chosen_ids = locations[guild_id];
+        let chosen_ids = locations[guild_id]['listening'];
         console.log("what chan ids", locations);
         setTimeout(() => {
             explore_messages(guild_id, chans, chosen_ids);
