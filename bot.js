@@ -334,7 +334,7 @@ function check_messages() {
             explore_messages(guild_id, chans, chosen_ids);
         }, 100);
     }
-    aggregate_toasts.find({}, function(err, result) {
+    aggregate_toasts.find({}).toArray(function(err, result) {
         console.log("all toasts", result);
     })
 }
