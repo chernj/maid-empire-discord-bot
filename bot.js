@@ -384,6 +384,9 @@ function gleam_messages_from_channel(g_id, c_id, messages) {
 
 function who_toast_reacted(message) {
     var output = [];
+    if (message.reactions) {
+        console.log("all reactions?", message.reactions);
+    }
     for (const rct of message.reactions.values()) {
         console.log("namae", rct.name);
         if (rct.name == 'beers') {
