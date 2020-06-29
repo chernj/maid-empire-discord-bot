@@ -330,7 +330,7 @@ function check_messages() {
     for (const guild_id in guild_channels) {
         let chans = guild_channels[guild_id];
         let chosen_ids = locations[guild_id];
-        console.log("what chan ids", chosen_ids);
+        console.log("what chan ids", locations);
         setTimeout(() => {
             explore_messages(guild_id, chans, chosen_ids);
         }, 100);
