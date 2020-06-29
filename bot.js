@@ -1,7 +1,7 @@
 const Discord = require('discord.js');
-const mongodb = require("mongodb");
+const mongodb = require('mongodb');
 
-require('./messaging.js');
+const messaging = require('./messaging.js');
 
 const client = new Discord.Client();
 
@@ -203,7 +203,7 @@ function setup(message) {
         });
     } else {
         message.reply(
-            invalid_perm_message('Please ask someone who can to set me up')
+            messaging.invalid_perm_message('Please ask someone who can to set me up')
         )
     }
 }
@@ -211,7 +211,7 @@ function setup(message) {
 function channel_managing_content(message, content) {
     if (!can_touch_bot(message)) {
         message.reply(
-            invalid_perm_message('Please allow someone who can to manage my settings')
+            messaging.invalid_perm_message('Please allow someone who can to manage my settings')
         );
         return null;
     }
@@ -312,14 +312,14 @@ client.on('message', message => {
             edit_app_settings(message, ...mng_channels);
         }
         if (looking_for(content, 'reminder help')) {
-            message.reply(reminder_help_str());
+            message.reply(messaging.reminder_help_str());
         } else if (looking_for(content, 'help')) {
-            message.reply(server_help_str(can_touch_bot(message)));
+            message.reply(messaging.server_help_str(can_touch_bot(message)));
         } else if (looking_for(content, 'commands')) {
             if (can_touch_bot(message)) {
-                message.reply(channel_management_str());
+                message.reply(messaging.channel_management_str());
             } else {
-                message.reply(invalid_perm_message('Please do not worry about these commands.'));
+                message.reply(messaging.invalid_perm_message('Please do not worry about these commands.'));
             }
         }
     }
