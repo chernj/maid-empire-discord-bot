@@ -329,6 +329,7 @@ client.on('message', message => {
 function check_messages() {
     for (const guild_id in guild_channels) {
         let chans = guild_channels[guild_id];
+        console.log("what chans", chans);
         let chosen_ids = locations[guild_id];
         setTimeout(() => {
             explore_messages(guild_id, chans, chosen_ids);
@@ -338,7 +339,7 @@ function check_messages() {
 
 function explore_messages(guild_id, channels, channel_ids, limiter=100) {
     // pull up *limiter* messages in a channel, then check for toasts in any of them
-    for (const chan_obj of channels.values()) {
+    for (const chan_obj of channels) {
         var c_id = String(chan_obj.id);
         if (channel_ids.includes(c_id)) {
             chan_obj.fetchMessages({limit: limiter}).then(function(messages) {
