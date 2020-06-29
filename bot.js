@@ -1,6 +1,8 @@
 const Discord = require('discord.js');
 const mongodb = require("mongodb");
 
+require('messaging.js')();
+
 const client = new Discord.Client();
 
 client.on('ready', () => {
@@ -9,10 +11,16 @@ client.on('ready', () => {
 
 var db_client;
 var toasts;
+var aggregate_toasts;
 var reminders;
 var user_settings;
-var app_settings;
+var app_settings;  // contains settings for channels on servers, as well as last message checked
 var locations = {};
+var slated_for_deletion = {};  // ideally for deleting command messages
+var last_checked_message = {};  // used for ensuring we don't miss recent toasts
+var guild_channels = {};
+
+var toast_interval;
 
 mongodb.MongoClient.connect(process.env.MONGODB_URI, function (err, database) {
     if (err) {
@@ -26,27 +34,44 @@ mongodb.MongoClient.connect(process.env.MONGODB_URI, function (err, database) {
     user_settings = database.collection('user_settings');
     app_settings = database.collection('app_settings');
     populate_settings();
+    // check for toasts every 5 seconds
+    toast_interval = setInterval(check_messages, 5000);
 });
 
-function handle_toast(message) {
-    toasts.insert([{
-        'content': message.content
-    }], function(err, result) {
-        if (err) {
-            console.log(err);
-            throw err;
+function record_toast_react(message, user_id) {
+    // check to see if user already toasted. If not, record appropriately
+    // TODO: Prevent self toast
+    toasts.findOne({
+        'msg': message.id,
+        'u': user_id
+    }, function(err, result) {
+        if (err) throw err;
+        if (!result) {
+            // record toast
+            toasts.insert([{
+                'msg': message.id,
+                'u': user_id
+            }]);
+            aggregate_toasts.updateOne(
+                {'u': user_id},
+                {$inc: {'c': 1} },
+                {upsert: true}
+            );
         }
-        if (result) {
-            console.log(message.mentions.users.keyArray());
-        }
-    });
-    toasts.count({}, function(e, entries_count) {
-        if (e) throw e;
-        console.log(entries_count);
     });
 }
 
+function record_toast_message(message) {
+    // record message from direct toasting
+    for (const user of message.mentions.users.values()) {
+        record_toast_react(message, user.id);
+    }
+}
+
 function populate_settings() {
+    /*
+    Populates the locations and last_checked_message dictionaries
+    */
     locations = {};
     app_settings.find({}).toArray(function(err, result) {
         if (err) throw err;
@@ -64,9 +89,12 @@ function populate_settings() {
                 locations[entry.guild]['gloating'].push(entry.channel_id);
             } else if (entry.option == 'q') {
                 locations[entry.guild]['querying'].push(entry.channel_id);
+            } else if (entry.option == 'm') {
+                // fill in last_checked_message
+                var msg_key = toString(entry.guild) + '.' + toString(entry.channel_id);
+                last_checked_message[msg_key] = entry.message_id;
             }
         });
-        // sconsole.log(locations);
     });
 }
 
@@ -122,43 +150,6 @@ function remove_channel_setting(chosen_guild, chan_ids, option, callback=null) {
     });
 }
 
-function channel_management_str() {
-    let help_str = [
-        '\nI only speak when spoken to. Mention me to use any command, including the ones below.\n',
-        '`listen for toasts in` along with channel mentions allows me to listen for toasts in these channels.',
-        '`talk about toasts in` again with channel mentions allows me to relay accomplishments in these channels.',
-        '`enable querying in` plus channel mentions allows me respond to commands in designed channels.',
-        '\n`don\'t` as a prefix before the first two commands deafen and mute me to any mentioned channels.',
-        'Finally, using `disable` instead of `enable` reverses the querying command.'
-    ];
-    return help_str.join('\n');
-}
-
-function server_help_str(managing_perm) {
-    let help_str = [
-        '\nYou can configure how you interact with toasts, as well as set timed or ',
-        'dynamic reminders to receive additional encouragement to achieve your goals.\n',
-        'While mentioning me, say:\n',
-        '`reminders?` to see what reminders are set for you\n',
-        '`toasts?` along with an optional time specification to see toasts given to you going back ',
-        'until the specified time.\n\t\tTime format is `NUMBER UNIT`, with valid units being week, day, ',
-        'and hour.\n\t\tIf you\'d prefer to have these results messaged to you, preppend the command ',
-        'with `DM`.\n',
-        '`help` to see this menu again.'
-    ];
-    if (managing_perm) {
-        help_str.push('\n\nAlso, configure me to your liking so I can better help others. While mentioning me say:');
-        help_str.push('\n`app settings` to understand how I\'m configured to help this server.');
-        help_str.push('\n`commands` to understand how to edit any server settings.')
-    }
-    return help_str.join('');
-}
-
-function invalid_perm_message(followup) {
-    let base = 'Sorry, but you do not have the ability to manage channels.\n';
-    return base + followup;
-}
-
 function can_touch_bot(message) {
     let perms = message.member.permissions;
     return perms.has('MANAGE_CHANNELS');
@@ -184,6 +175,7 @@ function setup(message) {
             })
             let chosen_guild = message.guild.id;
             let guild_chans = message.guild.channels;
+            guild_channels[chosen_guild] = guild_chans;
             let [listens, rl] = get_channel_names(guild_chans, listen_toasts_channels);
             remove_channel_setting(chosen_guild, rl, 'l');
             let [gloats, rg] = get_channel_names(guild_chans, gloat_toasts_channels);
@@ -226,24 +218,24 @@ function channel_managing_content(message, content) {
     let managing = false;
     let add = true;
     let option = '';
-    if (content.startsWith('listen for toasts in')) {
+    if (looking_for(content, 'listen for toasts in')) {
         managing = true;
         option = 'l';
-    } else if (content.startsWith('don\'t listen for toasts in')) {
+    } else if (looking_for(content, 'don\'t listen for toasts in')) {
         add = false;
         managing = true;
         option = 'l';
-    } else if (content.startsWith('talk about toasts in')) {
+    } else if (looking_for(content, 'talk about toasts in')) {
         managing = true;
         option = 'g';
-    } else if (content.startsWith('don\'t talk about toasts in')) {
+    } else if (looking_for(content, 'don\'t talk about toasts in')) {
         add = false;
         managing = true;
         option = 'g';
-    } else if (content.startsWith('enable querying in')) {
+    } else if (looking_for(content, 'enable querying in')) {
         managing = true;
         option = 'q';
-    } else if (content.startsWith('disable querying in')) {
+    } else if (looking_for(content, 'disable querying in')) {
         add = false;
         managing = true;
         option = 'q';
@@ -310,7 +302,7 @@ function looking_for(content, phrase) {
 client.on('message', message => {
     let content = message.content.toLowerCase();
     if (looking_for(content, 'toast')) {
-        handle_toast(message);
+        record_toast_message(message);
     } else if (message.mentions.members.has(client.user.id)) {
         if (looking_for(content, 'app settings')) {
             setup(message);
@@ -319,7 +311,9 @@ client.on('message', message => {
         if (mng_channels != null) {
             edit_app_settings(message, ...mng_channels);
         }
-        if (looking_for(content, 'help')) {
+        if (looking_for(content, 'reminder help')) {
+            message.reply(reminder_help_str());
+        } else if (looking_for(content, 'help')) {
             message.reply(server_help_str(can_touch_bot(message)));
         } else if (looking_for(content, 'commands')) {
             if (can_touch_bot(message)) {
@@ -331,18 +325,79 @@ client.on('message', message => {
     }
 });
 
+function check_messages() {
+    for (const guild_id in guild_channels) {
+        let chans = guild_channels[guild_id];
+        setTimeout(() => {
+            explore_messages(guild_id, channels, channel_ids);
+        }, 100);
+    }
+}
+
+function explore_messages(guild_id, channels, channel_ids, limiter=100) {
+    // pull up *limiter* messages in a channel, then check for toasts in any of them
+    for (const chan_obj of channels.values()) {
+        var c_id = String(chan_obj.id);
+        if (channel_ids.includes(c_id)) {
+            chan_obj.fetchMessages({limit: limiter}).then(function(messages) {
+                gleam_messages_from_channel(guild_id, c_id, messages)
+            }).catch(console.error);
+        }
+    }
+}
+
+function gleam_messages_from_channel(g_id, c_id, messages) {
+    // checks for toast reactions and any missed toast messages
+    var missed_toasts = [];
+    var found_last_toast = false;
+    var last_msg_key = toString(g_id) + '.' + toString(c_id);
+    var last_id = last_checked_message[last_msg_key];
+    var new_last = null;
+    for (const msg of messages) {
+        let content = msg.content.toLowerCase();
+        if (!(found_last_toast) && looking_for(content, 'toast')) {
+            if (msg.id == last_id) {
+                found_last_toast = true;
+            } else {
+                missed_toasts.push(msg);
+                if (new_last != null) new_last = msg.id;
+            }
+        }
+        var user_ids = who_toast_reacted(msg);
+        for (const u_id of user_ids) {
+            record_toast_react(msg, u_id);
+        }
+    }
+    for (const msg of missed_toasts) {
+        record_toast_message(msg);
+    }
+    if (new_last) last_checked_message[last_msg_key] = new_last;
+}
+
+function who_toast_reacted(message) {
+    var output = [];
+    for (const rct of message.reactions.values()) {
+        if (rct.name == 'beers') {
+            rct.fetchUsers({limit: 1000}).then(function(usrs) {
+                for (const usr of usrs) {
+                    output.push(usr.id);
+                }
+            });
+        }
+    }
+    return output;
+}
+
 client.login(process.env.BOT_TOKEN);
 
 process.on('SIGTERM', function() {
     toasts.drop(function (err) {
         if (err) throw err;
     })
-    app_settings.drop(function (err) {
-        if (err) throw err;
-    })
     client.destroy();
     db_client.close(function (err) {
         if (err) throw err;
     })
+    clearInterval(toast_interval);
     process.exit(0);
 });
