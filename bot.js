@@ -330,11 +330,13 @@ function check_messages() {
     for (const guild_id in guild_channels) {
         let chans = guild_channels[guild_id];
         let chosen_ids = locations[guild_id]['listening'];
-        console.log("what chan ids", locations);
         setTimeout(() => {
             explore_messages(guild_id, chans, chosen_ids);
         }, 100);
     }
+    aggregate_toasts.find({}, function(err, result) {
+        console.log("all toasts", result);
+    })
 }
 
 function explore_messages(guild_id, channels, channel_ids, limiter=100) {
