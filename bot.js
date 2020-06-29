@@ -339,6 +339,7 @@ function check_messages() {
 
 function explore_messages(guild_id, channels, channel_ids, limiter=100) {
     // pull up *limiter* messages in a channel, then check for toasts in any of them
+    if (!channel_ids) return false;
     for (const chan_obj of channels) {
         var c_id = String(chan_obj.id);
         if (channel_ids.includes(c_id)) {
