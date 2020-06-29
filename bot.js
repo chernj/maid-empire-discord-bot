@@ -30,6 +30,7 @@ mongodb.MongoClient.connect(process.env.MONGODB_URI, function (err, database) {
  
     db_client = database;
     toasts = database.collection('toasts');
+    aggregate_toasts = database.collection('aggregate_toasts');
     reminders = database.collection('reminders');
     user_settings = database.collection('user_settings');
     app_settings = database.collection('app_settings');
