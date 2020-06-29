@@ -39,6 +39,20 @@ mongodb.MongoClient.connect(process.env.MONGODB_URI, function (err, database) {
     toast_interval = setInterval(check_messages, 5000);
 });
 
+function record_toast_reactions(message) {
+    console.log("ALL reactions", message.reactions);
+    for (const rct of message.reactions.values()) {
+        console.log("namae", rct.name);
+        if (rct.name == 'beers') {
+            rct.fetchUsers({limit: 1000}).then(function(usrs) {
+                for (const usr of usrs) {
+                    record_toast_react(message, usr.id);
+                }
+            });
+        }
+    }
+}
+
 function record_toast_react(message, user_id) {
     // check to see if user already toasted. If not, record appropriately
     // TODO: Prevent self toast
@@ -371,31 +385,12 @@ function gleam_messages_from_channel(g_id, c_id, messages) {
                 if (new_last != null) new_last = msg.id;
             }
         }
-        var user_ids = who_toast_reacted(msg);
-        for (const u_id of user_ids) {
-            record_toast_react(msg, u_id);
-        }
+        record_toast_reactions(msg);
     }
     for (const msg of missed_toasts) {
         record_toast_message(msg);
     }
     if (new_last) last_checked_message[last_msg_key] = new_last;
-}
-
-function who_toast_reacted(message) {
-    var output = [];
-    console.log("all reactions?", message.reactions);
-    for (const rct of message.reactions.values()) {
-        console.log("namae", rct.name);
-        if (rct.name == 'beers') {
-            rct.fetchUsers({limit: 1000}).then(function(usrs) {
-                for (const usr of usrs) {
-                    output.push(usr.id);
-                }
-            });
-        }
-    }
-    return output;
 }
 
 client.login(process.env.BOT_TOKEN);
