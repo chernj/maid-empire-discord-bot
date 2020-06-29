@@ -1,7 +1,7 @@
 const Discord = require('discord.js');
 const mongodb = require("mongodb");
 
-require('messaging.js')();
+require('.messaging.js')();
 
 const client = new Discord.Client();
 
