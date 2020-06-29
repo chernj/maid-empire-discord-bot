@@ -334,9 +334,11 @@ function check_messages() {
             explore_messages(guild_id, chans, chosen_ids);
         }, 100);
     }
+    /*
     aggregate_toasts.find({}).toArray(function(err, result) {
         console.log("all toasts", result);
     })
+    */
 }
 
 function explore_messages(guild_id, channels, channel_ids, limiter=100) {
@@ -383,6 +385,7 @@ function gleam_messages_from_channel(g_id, c_id, messages) {
 function who_toast_reacted(message) {
     var output = [];
     for (const rct of message.reactions.values()) {
+        console.log("namae", rct.name);
         if (rct.name == 'beers') {
             rct.fetchUsers({limit: 1000}).then(function(usrs) {
                 for (const usr of usrs) {
